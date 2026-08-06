@@ -10,7 +10,7 @@ from read_thread import ReadThread
 
 
 class readApp(QWidget):
-    def __init__(self,main_window, tab_name, has_db_num=False):
+    def __init__(self,main_window, tab_name : str, has_db_num:bool=False):
         super().__init__()
         self.main_window = main_window
         self.tab_name=tab_name
@@ -64,9 +64,14 @@ class readApp(QWidget):
 
 
     def read_data(self):
+           
         plc=self.main_window.plc 
         start=self.start_byte.value()
         size = self.size.value()
+
+        if not plc or not plc.client.get_connected():
+                    QMessageBox.warning(self, "Uyarı", "Okuma yapmak için önce PLC'ye bağlanmalısınız!")
+                 
         
         if self.tab_name == "Datablock":
             db = self.db_num.value()

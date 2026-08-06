@@ -66,7 +66,7 @@ class ConnectApp(QWidget):
         self.ConnectionThread.start()
 
 
-    def control_connection_status(self, connection_status):
+    def control_connection_status(self, connection_status = bool):
         self.connection_status = connection_status
         if connection_status:
             self.status_label.setText("Durum: Bağlı")

@@ -21,14 +21,16 @@ class Params:
     byte_array: bytearray
     byte_index: int
     data_type: DataType
-    value: Any
-    _int: int
-    real: bool | str | float | int
     
 
     # Opsiyonel parametreler (Varsayılan değerleri olanlar)
     bool_index: int = 0
     max_size: int = 254
+    value: Any = None
+    _int: int = None
+    real: bool | str | float | int = None
+
+
 
     
 
@@ -151,9 +153,9 @@ class PLC:
         """
         return self.client.mb_write(start_bytes, data)
 
-    def read_datablocks(self, db_number:int, size:int) -> bytearray:
+    def read_datablocks(self,start_bytes: int, db_number:int, size:int) -> bytearray:
     
-        return self.client.db_read(db_number, size)
+        return self.client.db_read(db_number, start_bytes, size)
     
     def write_datablocks(self, db_number:int, start:int, data) -> int:
                 
@@ -206,7 +208,7 @@ class PLC:
     
     def read_datablock_with_enum(self, params:Params) :
 
-        method_name = f"read_{DataType.value}"
+        method_name = f"read_{params.data_type.name.lower()}"
         method = getattr(self, method_name)
 
         if params.data_type == DataType.BOOL:
@@ -218,7 +220,7 @@ class PLC:
 
     def write_datablock_with_enum(self, params:Params) :
     
-        method_name = f"read_{DataType.value}"
+        method_name = f"read_{DataType}"
         method = getattr(self, method_name)
     
         if params.data_type == DataType.BOOL :
@@ -248,11 +250,11 @@ class PLC:
 
 
 
-if __name__ == "__main__":
-    plc = PLC(ip="192.168.1.10",rack= 0, slot= 1)
-    plc.connect()
+# if __name__ == "__main__":
+#     plc = PLC(ip="192.168.1.10",rack= 0, slot= 1)
+#     plc.connect()
 
-    if plc.client.get_connected():
+#     if plc.client.get_connected():
         
 
-        plc.disconnect()
+#         plc.disconnect()
