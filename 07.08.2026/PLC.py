@@ -1,9 +1,8 @@
 from snap7.client import Client
 from snap7.util import get_byte, get_word, get_dword, set_byte, set_word, set_dword, get_bool, set_bool, get_int, set_int, get_real, set_real, get_string, set_string
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
-import snap7.util as util
 
 
 class DataType(Enum):
@@ -19,7 +18,7 @@ class DataType(Enum):
 class Params:
     #byte_array: bytearray
     byte_index: int
-    data_type: DataType
+    #data_type: DataType = field(init=False)
     
     def get(self):
         pass
@@ -30,21 +29,21 @@ class Params:
 @dataclass
 class Write_Word(Params): #yazma için sadece
     _int: int 
-    data_type: DataType = DataType.WORD
+    data_type= DataType.WORD
     def set(self,byte_array):
         return set_word(byte_array, self.byte_index,self._int)
 
 @dataclass
 class Write_Dword(Params): #yazma için sadece
     _int: int 
-    data_type: DataType = DataType.DWORD
+    data_type= DataType.DWORD
     def set(self,byte_array):
         return set_dword(byte_array, self.byte_index,self._int)
 
 @dataclass
 class Write_Int(Params): #yazma için sadece
     _int: int 
-    data_type: DataType = DataType.INT
+    data_type = DataType.INT
     def set(self,byte_array):
         return set_int(byte_array, self.byte_index,self._int)
 
@@ -54,14 +53,14 @@ class Write_String(Params):
     _int: int
     value: str
     max_size: int 
-    data_type: DataType = DataType.STRING
+    data_type = DataType.STRING
     def set(self,byte_array):
         return set_string(byte_array, self.byte_index, self._int, self._int, self.max_size)
 
 @dataclass
 class Read_Bool(Params):
     bool_index: int 
-    data_type: DataType = DataType.BOOL
+    data_type = DataType.BOOL
     def get(self,byte_array):
         return get_bool(byte_array, self.byte_index, self.bool_index)
 
@@ -70,7 +69,7 @@ class Read_Bool(Params):
 class Write_Bool(Read_Bool): 
     value: Any
     bool_index: int  
-    data_type: DataType = DataType.BOOL
+    data_type = DataType.BOOL
     def set(self, byte_array):
         return set_bool(byte_array, self.byte_index, self.bool_index, self.value)
 
@@ -78,13 +77,13 @@ class Write_Bool(Read_Bool):
 @dataclass
 class Write_Real(Params):
     real: bool | str | float | int
-    data_type: DataType = DataType.REAL
+    data_type = DataType.REAL
     def set(self, byte_array):
         return set_real(byte_array, self.byte_index, self.real)
 
 @dataclass
 class Read_String(Params):
-    data_type: DataType = DataType.STRING
+    data_type = DataType.STRING
     max_size: int = 254
 
     def get(self, byte_array):
@@ -92,56 +91,51 @@ class Read_String(Params):
 
 @dataclass
 class Read_Int(Params):
-    data_type: DataType = DataType.INT
+    data_type = DataType.INT
     def get(self, byte_array):
         return get_int(byte_array, self.byte_index)
 
 @dataclass
 class Read_Word(Params):
-    data_type: DataType = DataType.WORD
+    data_type = DataType.WORD
     def get(self, byte_array):
         return get_word(byte_array, self.byte_index)
 
 @dataclass
 class Read_Dword(Params):
-    data_type: DataType = DataType.DWORD
+    data_type= DataType.DWORD
     def get(self, byte_array):
         return get_dword(byte_array, self.byte_index)
 
 @dataclass
 class Read_Byte(Params):
-    data_type: DataType = DataType.BYTE
+    data_type= DataType.BYTE
     def get(self, byte_array):
         return get_byte(byte_array, self.byte_index)   
 
 @dataclass
 class Read_Real(Params):
-    data_type: DataType = DataType.REAL
+    data_type = DataType.REAL
     def get(self, byte_array):
         return get_real(byte_array, self.byte_index)
 
 @dataclass
 class Write_Byte(Params):
-    data_type: DataType = DataType.BYTE
     _int: int
+    data_type= DataType.BYTE
+    
     def get(self, byte_array):
         return set_byte(byte_array, self.byte_index, self._int)
 
-schema = {   
-            "bool1" : Read_Bool(),
-            "int1" : Read_Int(),
-            "word1" : Read_Word(),
-            "dword1" : Read_Dword()
-        }
+
   
 
 class PLC:
-    def __init__(self, ip: str, rack: int, slot: int, tcpport: int = 102) -> None:
+    def __init__(self, ip: str, rack: int, slot: int) -> None:
 
         self.ip=ip
         self.rack = rack
         self.slot=slot
-        self.tcpport= tcpport
         self.client = Client()  
 
     #bağlantı kontrolü
@@ -153,11 +147,11 @@ class PLC:
 
         """
         try:
-            self.client.connect(self.ip, self.rack, self.slot, self.tcpport)
+            self.client.connect(self.ip, self.rack, self.slot)
             print(f"Bağlantı başarılı")
             return True
-        except:
-            print(f"Bağlantı başarısız")
+        except Exception as e:
+            print(f"Bağlantı başarısız {e}")
             return False
 
     def disconnect(self):
@@ -169,8 +163,8 @@ class PLC:
 
 
 class Data:
-    start_bytes: int
-    size: int
+    start_bytes: int = 0
+    size: int =0 
 
     def __init__(self, plc:PLC):
         self.plc=plc
@@ -182,7 +176,6 @@ class Data:
         veriler = {}
         
         for key,value in schema.items():
-            param_class = value.DataType
             veriler[key] = value.get(ham_veri)
 
         return veriler
@@ -193,25 +186,25 @@ class Input(Data):
 
     def read(self, schema:dict):
         ham_veri =self.plc.client.eb_read(self.start_bytes, self.size)
-        return self.parse_schema(ham_veri, schema)
+        return self._schema(ham_veri, schema)
 
 
 
 class Output(Data):
     def read(self,schema:dict):
         ham_veri =self.plc.client.ab_read(self.start_bytes, self.size)
-        return self.parse_schema(ham_veri, schema)
+        return self._schema(ham_veri, schema)
 
 
 class Marker(Data):
     def read(self,schema:dict):
         ham_veri = self.plc.client.mb_read(self.start_bytes, self.size)
-        return self.parse_schema(ham_veri, schema)
+        return self._schema(ham_veri, schema)
 
 
         
 class Datablock(Data):
     def read(self,db_number: int, schema:dict):
         ham_veri= self.plc.client.db_read(db_number,self.start_bytes, self.size)
-        return self.parse_schema(ham_veri, schema)
+        return self._schema(ham_veri, schema)
 

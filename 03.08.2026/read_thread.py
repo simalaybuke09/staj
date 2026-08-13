@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QThread, pyqtSignal
-from PLC import PLC, DataType, Params
+from PLC import PLC, DataType, Params , BoolRead
 from dataclasses import dataclass
 
 
@@ -14,8 +14,6 @@ class ReadThread(QThread):
         self.size = size
         self.veri_tipi = veri_tipi
         self.bool_index = bool_index
-
-
 
     def run(self):
 
@@ -33,7 +31,12 @@ class ReadThread(QThread):
             elif self.veri_tipi == DataType.STRING:
                 self.size0 = 254
 
+            
             ham_veri = self.plc.read_datablocks(self.db ,self.baslangic_byte,self.size0)
+
+            if self.veri_tipi== DataType.BOOL:
+                parametreler = BoolRead(byte_array=ham_veri, byte_index= self.byte_index, bool_index =self.bool_index)
+
             parametreler = Params(byte_array=ham_veri, byte_index=0,size0=self.size0, data_type=self.veri_tipi, bool_index =self.bool_index)
             okunan_veri = self.plc.read_datablock_with_enum(parametreler)
             self.signal.emit(str(okunan_veri))            
