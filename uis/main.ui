@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>382</width>
-    <height>306</height>
+    <width>935</width>
+    <height>567</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
+    <item alignment="Qt::AlignTop">
      <widget class="QFrame" name="frame">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -35,7 +35,7 @@
         <widget class="QComboBox" name="veri">
          <item>
           <property name="text">
-           <string>Datablok</string>
+           <string>Datablock</string>
           </property>
          </item>
          <item>
@@ -50,7 +50,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Merker</string>
+           <string>Marker</string>
           </property>
          </item>
         </widget>
@@ -177,6 +177,64 @@
          <property name="text">
           <string>DB Numarası</string>
          </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_2">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="1" column="0" colspan="2">
+        <widget class="QPushButton" name="ExcelButton">
+         <property name="text">
+          <string>Excel'de İstenen Verileri Çek</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QTableWidget" name="Tablo">
+         <column>
+          <property name="text">
+           <string>Veri Tipi</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Data Tipi</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Başlangıç Adresi</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Büyüklük</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Bool Index</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>DB Numarası</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Değer</string>
+          </property>
+         </column>
         </widget>
        </item>
       </layout>
