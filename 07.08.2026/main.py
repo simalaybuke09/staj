@@ -15,8 +15,9 @@ class MainWindow(QMainWindow):
 
         self.ui.submit.clicked.connect(self.submit_clicked)
         self.ui.ExcelButton.clicked.connect(self.ExcelButton_clicked)
-
-
+        self.ui.pushButton.clicked.connect(self.push_clicked)
+        self.ui.ExcelWriteButton.clicked.connect(self.Write_Excecl_clicked)
+         
     def submit_clicked(self):
         veri = self.ui.veri.currentText()
         data = self.ui.data.currentText()
@@ -63,6 +64,58 @@ class MainWindow(QMainWindow):
 
         self.ui.result.setText(str(cikti["okunan_veri"]))
 
+    def push_clicked(self):
+        veri = self.ui.veri.currentText()
+        data = self.ui.data.currentText()
+        size = self.ui.size.currentText()
+        start = self.ui.startAddress.text() 
+        boolindex = self.ui.boolIndex.text()
+        db_number = self.ui.db_number.text()
+        deger = self.ui.deger.text()
+
+        if veri == "Input":
+            nesne = Input(self.plc)
+        elif veri == "Output":
+            nesne = Output(self.plc)
+        elif veri == "Marker":
+            nesne = Marker(self.plc)
+        elif veri == "Datablock":
+            nesne = Datablock(self.plc)
+        nesne.start_bytes = int(start)
+        nesne.size = int(size)
+
+        if data == "Bool":
+            bool_degeri = deger in ["1", "True", "true", "TRUE"]
+            param = Write_Bool(byte_index =0, bool_index=int(boolindex), value = bool_degeri)
+        elif data == "Byte":
+            param = Write_Byte(byte_index =0 , _int = int(deger))
+        elif data == "Int":
+            param = Write_Int(byte_index = 0, _int = int(deger))
+        elif data == "Word":
+            param = Write_Word(byte_index =0 , _int = int(deger))
+        elif data == "DWord":
+            param = Write_Dword(byte_index =0 , _int = int(deger))
+        elif data == "Real":
+            param = Write_Real(byte_index =0 , real = float(deger))
+        elif data == "String":
+            param = Write_String(byte_index =0 , _int = len(deger), value = str(deger), max_size = 254)
+
+
+        schema = {   
+                    "yazilacak_veri" : param
+                } 
+        try: 
+
+            if type(nesne) == Datablock:
+                cikti = nesne.write(db_number=int(db_number), schema=schema)
+            else:
+                cikti = nesne.write(schema=schema)
+
+            self.ui.result.setText("istenilen veri yazildi")
+
+        except Exception as e:
+            self.ui.result.setText(str(e))
+
 
     def ExcelButton_clicked(self):
          #excelden gelen veriler için dict
@@ -80,7 +133,9 @@ class MainWindow(QMainWindow):
 
         liste= [] #tekrar tekrar excel den çekmek yerine nesneleri ve çıktıları listede tutarızve tabloya yazarız
         tablo = self.ui.Tablo
-        excel_list = pd.read_excel("Config.xlsx")
+
+        
+        excel_list = pd.read_excel(r"C:\Users\oyunc\Downloads\staj\07.08.2026\Config.xlsx")
 
         for index, row in excel_list.iterrows():
 
@@ -150,8 +205,8 @@ class MainWindow(QMainWindow):
                     for db_number, alt_schema in value.items():
                         nesne= Datablock(self.plc)
                         nesne.start_bytes = 0
-                        nesne.size = 1024
-                        cikti = nesne.read(schema = alt_schema, db_number=int(db_number))
+                        nesne.size = 100
+                        cikti = nesne.read(db_number=int(db_number), schema = alt_schema)
                         toplu_okuma.update(cikti)
                 else:
                     sinif = rehber[key]

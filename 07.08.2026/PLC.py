@@ -124,7 +124,7 @@ class Write_Byte(Params):
     _int: int
     data_type= DataType.BYTE
     
-    def get(self, byte_array):
+    def set(self, byte_array):
         return set_byte(byte_array, self.byte_index, self._int)
 
 
@@ -165,6 +165,7 @@ class PLC:
 class Data:
     start_bytes: int = 0
     size: int =0 
+    
 
     def __init__(self, plc:PLC):
         self.plc=plc
@@ -180,6 +181,17 @@ class Data:
 
         return veriler
 
+    def write(self, start_bytes : int, size : int):
+        pass
+
+    def w_schema(self,buffer : bytearray ,schema: dict):
+        veriler = {}
+        
+        for key,value in schema.items():
+            value.set(buffer)
+
+        return buffer 
+
 class Input(Data):
     def __init__(self, plc:PLC):
         super().__init__(plc)
@@ -187,19 +199,32 @@ class Input(Data):
     def read(self, schema:dict):
         ham_veri =self.plc.client.eb_read(self.start_bytes, self.size)
         return self._schema(ham_veri, schema)
-
-
+    def write(self, schema:dict):
+        buffer = self.plc.client.eb_read(self.start_bytes, self.size)
+        self.w_schema(buffer , schema)
+        self.plc.client.eb_write(self.start_bytes, self.size, buffer)
+        print("Yazma işlemi başarılı")
 
 class Output(Data):
     def read(self,schema:dict):
         ham_veri =self.plc.client.ab_read(self.start_bytes, self.size)
         return self._schema(ham_veri, schema)
+    def write(self,schema:dict ):
+        buffer = self.plc.client.ab_read(self.start_bytes, self.size)
+        self.w_schema(buffer , schema)
+        self.plc.client.ab_write(self.start_bytes,buffer)
+        print("Yazma işlemi başarılı")
 
-
+    
 class Marker(Data):
     def read(self,schema:dict):
         ham_veri = self.plc.client.mb_read(self.start_bytes, self.size)
         return self._schema(ham_veri, schema)
+    def write(self ,schema:dict ):
+        buffer = self.plc.client.mb_read(self.start_bytes, self.size)
+        self.w_schema(buffer , schema)
+        self.plc.client.mb_write(self.start_bytes, buffer)
+        print("Yazma işlemi başarılı")
 
 
         
@@ -207,4 +232,8 @@ class Datablock(Data):
     def read(self,db_number: int, schema:dict):
         ham_veri= self.plc.client.db_read(db_number,self.start_bytes, self.size)
         return self._schema(ham_veri, schema)
-
+    def write(self, db_number : int, schema:dict):
+        buffer = self.plc.client.db_read(db_number,self.start_bytes, self.size)
+        self.w_schema(buffer , schema)
+        self.plc.client.db_write(db_number, self.start_bytes, buffer)
+        print("Yazma işlemi başarılı")
