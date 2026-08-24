@@ -223,7 +223,7 @@ class Marker(Data):
     def write(self ,schema:dict ):
         buffer = self.plc.client.mb_read(self.start_bytes, self.size)
         self.w_schema(buffer , schema)
-        self.plc.client.mb_write(self.start_bytes, buffer)
+        self.plc.client.mb_write(self.start_bytes,self.size, buffer)
         print("Yazma işlemi başarılı")
 
 

@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
         self.ui.submit.clicked.connect(self.submit_clicked)
         self.ui.ExcelButton.clicked.connect(self.ExcelButton_clicked)
         self.ui.pushButton.clicked.connect(self.push_clicked)
-        self.ui.ExcelWriteButton.clicked.connect(self.Write_Excecl_clicked)
+        self.ui.ExcelWriteButton.clicked.connect(self.Write_Excel_clicked)
          
     def submit_clicked(self):
         veri = self.ui.veri.currentText()
@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
         nesne.size = int(size)
 
         if data == "Bool":
-            bool_degeri = deger in ["1", "True", "true", "TRUE"]
+            bool_degeri = str(deger).strip().lower() in ["1", "True", "true", "TRUE"]
             param = Write_Bool(byte_index =0, bool_index=int(boolindex), value = bool_degeri)
         elif data == "Byte":
             param = Write_Byte(byte_index =0 , _int = int(deger))
@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
 
 
     def ExcelButton_clicked(self):
-         #excelden gelen veriler için dict
+        #excelden gelen veriler için dict
         # Input: { Bool_0 : param1
         #          Int_8 : param2
         #}
@@ -231,6 +231,89 @@ class MainWindow(QMainWindow):
             tablo.setItem(row_no,4, QTableWidgetItem(str(row["Bool Index"])))
             tablo.setItem(row_no,5, QTableWidgetItem(str(row["DB Numarası"])))
             tablo.setItem(row_no,6, QTableWidgetItem(str(row["Değer"])))
+
+    def Write_Excel_clicked(self):
+        schemas = {
+            "Input": {},
+            "Output": {},
+            "Marker": {},
+            "Datablock": {}
+        }
+
+        liste= [] 
+       
+        excel_list = pd.read_excel(r"C:\Users\oyunc\Downloads\staj\07.08.2026\Write_Config.xlsx")
+
+        for index, row in excel_list.iterrows():
+
+            veri_tipi= row["Veri Tipi"]
+            data = row["Data Tipi"]
+            start = int(row["Başlangıç Adresi"])
+            size = int(row["Büyüklük"])
+            boolindex = int(row["Bool Index"]) if pd.notna(row["Bool Index"]) else 0
+            db_number = int(row["DB Numarası"]) if pd.notna(row["DB Numarası"]) else 0
+            deger = row["Deger"]
+
+            if data == "Bool":
+                bool_degeri = str(deger).strip().lower() in ["1", "True", "true", "TRUE"]
+                param = Write_Bool(byte_index = start, bool_index=int(boolindex), value = bool_degeri)
+            elif data == "Byte":
+                param = Write_Byte(byte_index =start , _int = int(deger))
+            elif data == "Int":
+                param = Write_Int(byte_index = start, _int = int(deger))
+            elif data == "Word":
+                param = Write_Word(byte_index =start , _int = int(deger))
+            elif data == "DWord":
+                param = Write_Dword(byte_index = start, _int = int(deger))
+            elif data == "Real":
+                param = Write_Real(byte_index = start, real = float(deger))
+            elif data == "String":
+                param = Write_String(byte_index = start ,_int = len(str(deger)), value = str(deger), max_size = 254)
+
+
+                #veri_tipi_start şeklinde benzersiz anahtar kelime veririz veri tipi sözlüğündeki 
+            if veri_tipi == "Datablock":
+                anahtar = f"{veri_tipi}_{db_number}_{start}_{data}_{boolindex}"
+            else:
+                anahtar = f"{veri_tipi}_{start}_{data}_{boolindex}"
+
+            if veri_tipi == "Datablock":  
+                if db_number not in schemas[veri_tipi]:
+                    schemas[veri_tipi][db_number] = {}
+                schemas[veri_tipi][db_number][anahtar] = param
+            else:
+                schemas[veri_tipi][anahtar ] = param
+
+        rehber = {
+            "Input" : Input, 
+            "Output" : Output,
+            "Marker" : Marker,
+            "Datablock" : Datablock
+        }
+        try:
+
+            for key, value in schemas.items():
+                if len(value) > 0:
+
+                    if key == "Datablock":
+                        for db_number, alt_schema in value.items():
+                            nesne= Datablock(self.plc)
+                            nesne.start_bytes = 0
+                            nesne.size = 100
+                            nesne.write(db_number=int(db_number), schema = alt_schema)
+
+                    else:
+                        sinif = rehber[key]
+                        nesne = sinif(self.plc)
+                        nesne.start_bytes = 0
+                        nesne.size = 1024
+                        nesne.write(schema = value)
+            self.ui.result2.setText("Toplu yazma işlemi başarıyla tamamlandı!")
+                        
+        except Exception as e:
+            self.ui.result2.setText(str(e))
+
+ 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
