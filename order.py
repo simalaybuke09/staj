@@ -6,8 +6,6 @@ import random
 import re
 import sys
 
-
-
 #
 # Complete the 'filledOrders' function below.
 #
@@ -24,8 +22,6 @@ def filledOrders(order, k):
         while siparis <= k:
             count += siparis
         if count <= siparis:
-            
-    
     
     # Write your code here
 

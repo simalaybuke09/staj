@@ -16,6 +16,4 @@ while True:
     
 print(*dizi)
         
-
-
 kalan = sayi // 10

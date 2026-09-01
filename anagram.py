@@ -5,9 +5,6 @@ import os
 import random
 import re
 import sys
-
-
-
 #
 # Complete the 'stringAnagram' function below.
 #
@@ -33,12 +30,6 @@ def stringAnagram(dictionary, query):
                     i += 1
         dizi.append(i)
     return dizi        
-                
-                
-                
-            
-        
-    
     
 
 if __name__ == '__main__':
